@@ -17,6 +17,7 @@
         public DateTime PublishingDate { get; set; }
 
         public string? ImageUrl { get; set; }
+        public string? ImageThumbUrl { get; set; }
 
         [MaxLength(50)]
         public string Hall { get; set; } = null!;

@@ -17,6 +17,10 @@ body {
   margin-bottom: 60px;
 }
 
+.form-floating .form-select {
+   padding-top: 0.6rem !important;
+}
+
 /* Start Override Bootbox */
 
 .bootbox-close-button {

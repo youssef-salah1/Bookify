@@ -16,7 +16,7 @@ namespace Bookify.Web.Data
         }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Author> Authors { get; set; }
-        public DbSet<Author> Books { get; set; }
-        public DbSet<Author> BookCategory { get; set; }
+        public DbSet<Book> Books { get; set; }
+        public DbSet<Author> BookCategories { get; set; }
     }
 }

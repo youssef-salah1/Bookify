@@ -1,0 +1,14 @@
+{
+  "version": "3.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "expressive-annotations-validate@2.7.0",
+      "destination": "wwwroot/lib/expressive-annotations-validate/",
+      "files": [
+        "expressive.annotations.validate.min.js",
+        "expressive.annotations.validate.js"
+      ]
+    }
+  ]
+}
