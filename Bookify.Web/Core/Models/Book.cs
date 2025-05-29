@@ -18,7 +18,7 @@
 
         public string? ImageUrl { get; set; }
         public string? ImageThumbUrl { get; set; }
-
+        public string? ImagePublicId { get; set; }
         [MaxLength(50)]
         public string Hall { get; set; } = null!;
 

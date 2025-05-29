@@ -75,6 +75,9 @@ namespace Bookify.Web.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("ImagePublicId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ImageThumbUrl")
                         .HasColumnType("nvarchar(max)");
 

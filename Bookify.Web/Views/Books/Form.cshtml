@@ -10,7 +10,7 @@
 	<div class="card-body p-0">
 		<div class="card-p mb-10">
 			<form method="post" asp-controller="Books" enctype="multipart/form-data">
-				@if (Model.Id.Equals(0))
+				@if (Model.Id > 0)
 				{
 					<input type="hidden" asp-for="Id" />
 				}
