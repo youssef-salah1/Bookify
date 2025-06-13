@@ -286,11 +286,10 @@ $(document).ready(function () {
                             status.text(newStatus).toggleClass('badge-light-success badge-light-danger');
                             row.find('.js-updated-on').html(lastUpdatedOn);
                             row.addClass('animate__animated animate__flash');
-
-                            showSuccessMessage2();
+                            showSuccessMessage();
                         },
                         error: function () {
-                            showErrorMessage2();
+                            showErrorMessage();
                         }
                     });
                 }

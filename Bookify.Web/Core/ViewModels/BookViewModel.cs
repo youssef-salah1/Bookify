@@ -23,7 +23,7 @@
         public string Description { get; set; } = null!;
 
         public IEnumerable<string> Categories { get; set; } = null!;
-
+        public IEnumerable<BookCopy> BookCopies { get; set; } = null!;
         public bool IsDeleted { get; set; }
 
         public DateTime CreatedOn { get; set; }
