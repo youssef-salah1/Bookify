@@ -18,7 +18,7 @@ function showErrorMessage(message = 'Something went wrong!') {
     Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: message,
+        text: message.responseText !== undefined ? message.responseText : message ,
         customClass: {
             confirmButton: "btn btn-primary"
         }
@@ -87,7 +87,13 @@ function onModalSuccess(row) {
 function onModalComplete() {
     $('body :submit').removeAttr('disabled').removeAttr('data-kt-indicator');
 }
-
+function Select2() {
+    $('.js-select2').select2();
+    $('.js-select2').on('select2:select', function (e) {
+        var select = $(this);
+        $('form').not('#SignOut').validate().element('#' + select.attr('id'));
+    });
+}
 //DataTables
 var headers = $('th');
 $.each(headers, function (i) {
@@ -184,7 +190,7 @@ var KTDatatables = function () {
 
 $(document).ready(function () {
     // on submit form
-    $('form').on('submit', function () {
+    $('form').not('#SignOut').on('submit', function () {
         if ($('.js-tinymce').length > 0) {
             $('.js-tinymce').each(function () {
                 var content = tinyMCE.get($(this).attr('id')).getContent();
@@ -215,11 +221,7 @@ $(document).ready(function () {
         tinymce.init(options);
     }
     //Select 2
-    $('.js-select2').select2();
-    $('.js-select2').on('select2:select', function (e) {
-        var select = $(this);
-        $('form').validate().element('#' + select.attr('id'));
-    });
+    Select2();
     //SweetAlert
     var message = $('#Message').text();
     if (message !== '') {
@@ -247,6 +249,8 @@ $(document).ready(function () {
             success: function (form) {
                 modal.find('.modal-body').html(form);
                 $.validator.unobtrusive.parse(modal);
+                Select2();
+                
             },
             error: function () {
                 showErrorMessage();
@@ -297,5 +301,8 @@ $(document).ready(function () {
         });
     });
 
-
+    // Handle sign out form
+    $('.js-signout').on('click', function () {
+        $('#SignOut').submit();
+     });
 });

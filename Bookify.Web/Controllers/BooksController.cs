@@ -1,14 +1,17 @@
-﻿using System.IO;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using Bookify.Web.Core.Consts;
+﻿using Bookify.Web.Core.Consts;
+using Bookify.Web.Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.IdentityModel.Tokens;
+using System.IO;
+using System.Linq;
+using System.Linq.Dynamic.Core;
 
 namespace Bookify.Web.Controllers
 {
+    [Authorize(Roles = AppRoles.Archive)]
     public class BooksController : Controller
     {
         readonly private ApplicationDbContext _context;
@@ -69,6 +72,7 @@ namespace Bookify.Web.Controllers
             {
                 book.Categories.Add(new BookCategory { CategoryId = c });
             }
+            book.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             _context.Books.Add(book);
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
@@ -106,7 +110,9 @@ namespace Bookify.Web.Controllers
         {
             if (!ModelState.IsValid)
                 return View("Form", model);
-            var book = _context.Books.Include(c => c.Categories).SingleOrDefault(b => b.Id == model.Id);
+            var book = _context.Books.Include(c => c.Categories)
+                .Include(c => c.BookCopies)
+                .SingleOrDefault(b => b.Id == model.Id);
             if (book is null) return NotFound();
             if (model.Image is not null)
             {
@@ -161,6 +167,12 @@ namespace Bookify.Web.Controllers
             {
                 book.Categories.Add(new BookCategory { CategoryId = c });
             }
+            book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            if (!book.IsAvailableForRental)
+            {
+                foreach (var copy in book.BookCopies)
+                    copy.IsAvailableForRental = false;
+            }
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
@@ -202,7 +214,7 @@ namespace Bookify.Web.Controllers
 
             book.IsDeleted = !book.IsDeleted;
             book.LastUpdatedOn = DateTime.Now;
-
+            book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             _context.SaveChanges();
 
             return Ok();

@@ -13,7 +13,7 @@ namespace Bookify.Web.Seeds
                 FullName="Admin",
                 EmailConfirmed = true
             };
-            var valid = await userManager.FindByNameAsync(user.UserName);
+            var valid = await userManager.FindByEmailAsync(user.Email);
             if(valid is null)
             {
                 await userManager.CreateAsync(user, "Admin@1234");

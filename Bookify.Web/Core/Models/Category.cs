@@ -15,5 +15,7 @@ namespace Bookify.Web.Core.Models
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public DateTime? LastUpdatedOn { get; set; }
+        public string? CreatedById { get; set; }
+        public string? LastUpdatedById { get; set; }
     }
 }
