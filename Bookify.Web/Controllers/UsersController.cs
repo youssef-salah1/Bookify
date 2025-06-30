@@ -1,11 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Bookify.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Data;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
 namespace Bookify.Web.Controllers
 {
     [Authorize(Roles = "Admin")]
@@ -13,18 +18,45 @@ namespace Bookify.Web.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IEmailSender _emailSender;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IMapper _mapper;
+        private readonly IEmailBodyBuilder _emailBodyBuilder;
 
-        public UsersController(UserManager<ApplicationUser> userManager, IMapper mapper, RoleManager<IdentityRole> roleManager)
+        public UsersController(UserManager<ApplicationUser> userManager, IMapper mapper, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, IEmailSender emailSender, IWebHostEnvironment webHostEnvironment, IEmailBodyBuilder emailBodyBuilder)
         {
             _userManager = userManager;
             _mapper = mapper;
             _roleManager = roleManager;
-
+            _signInManager = signInManager;
+            _emailSender = emailSender;
+            _webHostEnvironment = webHostEnvironment;
+            _emailBodyBuilder = emailBodyBuilder;
         }
 
         public async Task<IActionResult> Index()
         {
+            //var user = await _userManager.FindByNameAsync("TEST");
+            //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            //code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            //var callbackUrl = Url.Page(
+            //    "/Account/ConfirmEmail",
+            //    pageHandler: null,
+            //    values: new { area = "Identity", userId = user.Id, code },
+            //    protocol: Request.Scheme);
+
+            //var body = _emailBodyBuilder.GetEmailBody(
+            //        "https://res.cloudinary.com/dyxgpclui/image/upload/v1747264748/icon-positive-vote-1_rdexez_acbkap.svg",
+            //        $"Hey {user.FullName}, thanks for joining us!",
+            //        "please confirm your email",
+            //        $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
+            //        "Active Account!"
+            //    );
+
+            //await _emailSender.SendEmailAsync(user.Email, "Confirm your email", body);
+            
+
             var users = await _userManager.Users.ToListAsync();
             var model = _mapper.Map<IEnumerable<UserViewModel>>(users);
             return View(model);
@@ -59,10 +91,28 @@ namespace Bookify.Web.Controllers
             };
             var result = await _userManager.CreateAsync(user, model.Password);
 
-            if (!result.Succeeded)
+             if (!result.Succeeded)
                 return BadRequest(string.Join(',', result.Errors.Select(e => e.Description)));
 
             await _userManager.AddToRolesAsync(user, model.SelectedRoles);
+
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var callbackUrl = Url.Page(
+                "/Account/ConfirmEmail",
+                pageHandler: null,
+                values: new { area = "Identity", userId = user.Id, code },
+                protocol: Request.Scheme);
+
+            var body = _emailBodyBuilder.GetEmailBody(
+                    "https://res.cloudinary.com/dyxgpclui/image/upload/v1747264748/icon-positive-vote-1_rdexez_acbkap.svg",
+                    $"Hey {user.FullName}, thanks for joining us!",
+                    "please confirm your email",
+                    $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
+                    "Active Account!"
+                );
+
+            await _emailSender.SendEmailAsync(user.Email, "Confirm your email", body);
             var viewModel = _mapper.Map<UserViewModel>(user);
             return PartialView("_UserRow", viewModel);
         }
@@ -145,6 +195,18 @@ namespace Bookify.Web.Controllers
             return PartialView("_UserRow", viewModel);
         }
         
+        public async Task<IActionResult> Unlock(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user is null)
+                return NotFound();
+            //user.AccessFailedCount = 0;
+            user.LockoutEnd = null;
+            user.LastUpdatedOn = DateTime.Now;
+            user.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            await _userManager.UpdateAsync(user);
+            return Ok(user.LastUpdatedOn.ToString());
+        }
         public async Task<IActionResult> ToggleStatus(string id)
         {
             var user = await _userManager.FindByIdAsync(id);

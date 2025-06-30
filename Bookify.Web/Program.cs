@@ -1,7 +1,11 @@
 using Bookify.Web.Core.Mapping;
 using Bookify.Web.Data;
+using Bookify.Web.Helpers;
 using Bookify.Web.Seeds;
+using Bookify.Web.Services;
+using Bookify.Web.Settings;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
@@ -22,6 +26,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.S
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
+builder.Services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
+
 builder.Services.Configure<IdentityOptions>(options =>
 {
 
@@ -29,9 +35,20 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
 
 });
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
+
+builder.Services.AddTransient<IImageService, ImageService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<IEmailBodyBuilder, EmailBodyBuilder>();
+
 
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
+
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(nameof(CloudinarySettings)));
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
+
 builder.Services.AddExpressiveAnnotations();
 var app = builder.Build();
 

@@ -28,7 +28,6 @@ namespace Bookify.Web.Controllers
         public IActionResult Index()
         {
             var books = _context.Books.AsNoTracking().ToList();
-            //var booksviewmodel = _mapper.Map<BookFormViewModel>(books);
             return View();
         }
         [HttpGet]
