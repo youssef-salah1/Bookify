@@ -6,7 +6,8 @@ namespace Cover_to_Cover.Web.Core.ViewModels
 {
     public class SubscriberFormViewModel
     {
-        public int Id { get; set; }
+        //public int Id { get; set; }
+        public string? Key {  get; set; }
 
         [Display(Name = "First Name")]
         [MaxLength(100, ErrorMessage = Errors.MaxLength)]
@@ -25,23 +26,23 @@ namespace Cover_to_Cover.Web.Core.ViewModels
         [Display(Name = "National Id")]
         [MaxLength(14, ErrorMessage = Errors.MaxLength)]
         [RegularExpression(RegexPatterns.NationalId, ErrorMessage = Errors.InvalidNationalId)]
-        [Remote("AllowItemNationalId", null!, AdditionalFields = "Id", ErrorMessage = Errors.Duplicated)]
+        [Remote("AllowItemNationalId", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
         public string NationalId { get; set; } = null!;
 
         [Display(Name = "Mobile Number")]
         [MaxLength(15, ErrorMessage = Errors.MaxLength)]
         [RegularExpression(RegexPatterns.MobileNumber, ErrorMessage = Errors.InvalidMobileNumber)]
-        [Remote("AllowItemMobileNumber", null!, AdditionalFields = "Id", ErrorMessage = Errors.Duplicated)]
+        [Remote("AllowItemMobileNumber", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
 
         public string MobileNumber { get; set; } = null!;
 
         public bool HasWhatsApp { get; set; }
 
         [MaxLength(150, ErrorMessage = Errors.MaxLength)]
-        [Remote("AllowItemEmail", null!, AdditionalFields = "Id", ErrorMessage = Errors.Duplicated)]
+        [Remote("AllowItemEmail", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
         public string Email { get; set; } = null!;
 
-        [RequiredIf("Id == 0", ErrorMessage = Errors.EmptyImage)]
+        [RequiredIf("Key == ''", ErrorMessage = Errors.EmptyImage)]
         public IFormFile? Image { get; set; }
 
         public string? ImageUrl { get; set; }

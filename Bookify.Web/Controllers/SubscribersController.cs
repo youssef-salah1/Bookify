@@ -1,22 +1,27 @@
 ﻿using Bookify.Web.Services;
 using Cover_to_Cover.Web.Core.Models;
 using Cover_to_Cover.Web.Core.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Cover_to_Cover.Web.Controllers
 {
+    //[Authorize(Roles = AppRoles.Reception)]
     public class SubscribersController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IImageService _imageService;
-
-        public SubscribersController(ApplicationDbContext context, IMapper mapper, IImageService imageService)
+        private readonly IDataProtector _dataProtector;
+        public SubscribersController(ApplicationDbContext context, IMapper mapper, IImageService imageService, IDataProtectionProvider dataProtector)
         {
             _context = context;
             _mapper = mapper;
             _imageService = imageService;
+            _dataProtector = dataProtector.CreateProtector("MySecureKey");
         }
 
         public IActionResult Index()
@@ -56,17 +61,23 @@ namespace Cover_to_Cover.Web.Controllers
             _context.Add(subscriber);
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Index), new { id = subscriber.Id });
+            var subscriberId = _dataProtector.Protect(subscriber.Id.ToString());
+
+            return RedirectToAction(nameof(Details), new { id = subscriberId });
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public IActionResult Edit(string id)
         {
-            var subscriber = _context.Subscribers.Find(id);
+            var subscriberId = int.Parse(_dataProtector.Unprotect(id));
+            var subscriber = _context.Subscribers.Find(subscriberId);
             if (subscriber is null)
                 return NotFound();
             var model = _mapper.Map<SubscriberFormViewModel>(subscriber);
+
             var viewModel = FillData(model);
+            viewModel.Key = id;
+
             return View("Form", viewModel);
         }
         [HttpPost]
@@ -76,7 +87,10 @@ namespace Cover_to_Cover.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Form", FillData(viewModel));
 
-            var subscriber = _context.Subscribers.Find(viewModel.Id);
+            var subscriberId = int.Parse(_dataProtector.Unprotect(viewModel.Key));
+
+            var subscriber = _context.Subscribers.Find(subscriberId);
+
             if (subscriber is null)
                 return NotFound();
 
@@ -97,7 +111,8 @@ namespace Cover_to_Cover.Web.Controllers
             }
             else
             {
-                viewModel.ImageUrl = subscriber.ImageUrl; viewModel.ImageThumbnailUrl = subscriber.ImageThumbnailUrl;
+                viewModel.ImageUrl = subscriber.ImageUrl;
+                viewModel.ImageThumbnailUrl = subscriber.ImageThumbnailUrl;
             }
             subscriber = _mapper.Map(viewModel, subscriber);
             subscriber.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
@@ -105,7 +120,7 @@ namespace Cover_to_Cover.Web.Controllers
 
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Index), new { id = subscriber.Id });
+            return RedirectToAction(nameof(Details), new { id = viewModel.Key });
         }
 
         [HttpPost]
@@ -123,20 +138,26 @@ namespace Cover_to_Cover.Web.Controllers
 
             var viewModel = _mapper.Map<SubscriberSearchResultViewModel>(subscriber);
 
+            if (subscriber is not null)
+                viewModel.Key = _dataProtector.Protect(subscriber.Id.ToString());
             return PartialView("_Result", viewModel);
         }
 
-        public IActionResult Details(int id)
+        public IActionResult Details(string id)
         {
+
+            var subscriberId = int.Parse(_dataProtector.Unprotect(id));
+
             var subscriber = _context.Subscribers
                 .Include(s => s.Governorate)
                 .Include(s => s.Area)
-                .SingleOrDefault(s => s.Id == id);
+                .SingleOrDefault(s => s.Id == subscriberId);
 
             if (subscriber is null)
                 return NotFound();
 
             var viewModel = _mapper.Map<SubscriberViewModel>(subscriber);
+            viewModel.Key = id;
 
             return View(viewModel);
         }
@@ -164,22 +185,34 @@ namespace Cover_to_Cover.Web.Controllers
         }
 
         // Validation Part
-        public IActionResult AllowItemNationalId(string NationalId, int Id)
+        public IActionResult AllowItemNationalId(string NationalId, string Key)
         {
+            var subscriberId = 0;
+            if (!String.IsNullOrEmpty(Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(Key));
+
             var user = _context.Subscribers.SingleOrDefault(s => s.NationalId == NationalId);
-            bool can = (user is null) || (user.Id == Id);
+            bool can = (user is null) || (user.Id == subscriberId);
             return Json(can);
         }
-        public IActionResult AllowItemMobileNumber(string MobileNumber, int Id)
+        public IActionResult AllowItemMobileNumber(string MobileNumber, string Key)
         {
+            var subscriberId = 0;
+            if (!String.IsNullOrEmpty(Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(Key));
+
             var user = _context.Subscribers.SingleOrDefault(s => s.MobileNumber == MobileNumber);
-            bool can = (user is null) || (user.Id == Id);
+            bool can = (user is null) || (user.Id == subscriberId);
             return Json(can);
         }
-        public IActionResult AllowItemEmail(string Email, int Id)
+        public IActionResult AllowItemEmail(string Email, string Key)
         {
+            var subscriberId = 0;
+            if (!String.IsNullOrEmpty(Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(Key));
+
             var user = _context.Subscribers.SingleOrDefault(s => s.Email == Email);
-            bool can = (user is null) || (user.Id == Id);
+            bool can = (user is null) || (user.Id == subscriberId);
             return Json(can);
         }
     }
