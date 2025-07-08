@@ -3,29 +3,28 @@ using System.Text.Encodings.Web;
 
 namespace Bookify.Web.Services
 {
-	public class EmailBodyBuilder : IEmailBodyBuilder
-	{
-		private readonly IWebHostEnvironment _webHostEnvironment;
+    public class EmailBodyBuilder : IEmailBodyBuilder
+    {
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-		public EmailBodyBuilder(IWebHostEnvironment webHostEnvironment)
-		{
-			_webHostEnvironment = webHostEnvironment;
-		}
+        public EmailBodyBuilder(IWebHostEnvironment webHostEnvironment)
+        {
+            _webHostEnvironment = webHostEnvironment;
+        }
 
-		public string GetEmailBody(string imageUrl, string header, string body, string url, string linkTitle)
-		{
-			var filePath = $"{_webHostEnvironment.WebRootPath}/templates/email.html";
-			StreamReader str = new(filePath);
+        public string GetEmailBody(string template, Dictionary<string, string> placeholders)
+        {
+            var filePath = $"{_webHostEnvironment.WebRootPath}/templates/{template}.html";
+            StreamReader str = new(filePath);
 
-			var template = str.ReadToEnd();
-			str.Close();
+            var templateContent = str.ReadToEnd();
+            str.Close();
 
-			return template
-				.Replace("[imageUrl]", imageUrl)
-				.Replace("[header]", header)
-				.Replace("[body]", body)
-				.Replace("[url]", url)
-				.Replace("[linkTitle]", linkTitle);
-		}
-	}
+            foreach (var placeholder in placeholders)
+                templateContent =
+                    templateContent.Replace($"[{placeholder.Key}]", placeholder.Value);
+
+            return templateContent;
+        }
+    }
 }

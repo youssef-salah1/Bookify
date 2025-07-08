@@ -2,17 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Bookify.Web.Core.Models;
+using Bookify.Web.Services;
+using Cover_to_Cover.Web.Core.Consts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
 namespace Bookify.Web.Areas.Identity.Pages.Account.Manage
 {
@@ -21,15 +23,18 @@ namespace Bookify.Web.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
+        private readonly IEmailBodyBuilder _emailBodyBuilder;
 
         public EmailModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IEmailBodyBuilder emailBodyBuilder)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _emailBodyBuilder = emailBodyBuilder;
         }
 
         /// <summary>
@@ -160,10 +165,23 @@ namespace Bookify.Web.Areas.Identity.Pages.Account.Manage
                 pageHandler: null,
                 values: new { area = "Identity", userId = userId, code = code },
                 protocol: Request.Scheme);
+
+            var placeholders = new Dictionary<string, string>()
+            {
+                { "imageUrl", "https://res.cloudinary.com/dyxgpclui/image/upload/v1747264748/icon-positive-vote-1_rdexez_acbkap.svg" },
+                { "header", $"Hey {user.FullName}," },
+                { "body", "please confirm your email" },
+                { "url", $"{HtmlEncoder.Default.Encode(callbackUrl!)}" },
+                { "linkTitle", "Confirm Email" }
+            };
+
+            var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Email, placeholders);
+
             await _emailSender.SendEmailAsync(
                 email,
                 "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                body);
+
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

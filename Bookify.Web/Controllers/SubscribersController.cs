@@ -1,11 +1,16 @@
 ﻿using Bookify.Web.Services;
+using Cover_to_Cover.Web.Core.Consts;
 using Cover_to_Cover.Web.Core.Models;
 using Cover_to_Cover.Web.Core.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Numerics;
+using System.Text.Encodings.Web;
 
 namespace Cover_to_Cover.Web.Controllers
 {
@@ -16,17 +21,21 @@ namespace Cover_to_Cover.Web.Controllers
         private readonly IMapper _mapper;
         private readonly IImageService _imageService;
         private readonly IDataProtector _dataProtector;
-        public SubscribersController(ApplicationDbContext context, IMapper mapper, IImageService imageService, IDataProtectionProvider dataProtector)
+
+        private readonly IEmailSender _emailSender;
+        private readonly IEmailBodyBuilder _emailBodyBuilder;
+        public SubscribersController(ApplicationDbContext context, IMapper mapper, IImageService imageService, IDataProtectionProvider dataProtector, IEmailSender emailSender, IEmailBodyBuilder emailBodyBuilder)
         {
             _context = context;
             _mapper = mapper;
             _imageService = imageService;
             _dataProtector = dataProtector.CreateProtector("MySecureKey");
+            _emailSender = emailSender;
+            _emailBodyBuilder = emailBodyBuilder;
         }
 
         public IActionResult Index()
         {
-            //var subscribers = _context.Subscribers.AsNoTracking().ToList();
             return View();
         }
         [HttpGet]
@@ -57,6 +66,29 @@ namespace Cover_to_Cover.Web.Controllers
                 subscriber.ImageThumbnailUrl = $"/images/subscribers/thumb/{imageName}";
             }
             subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+            Subscription subscription = new()
+            {
+                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
+                CreatedOn = DateTime.Now,
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddYears(1),
+            };
+            subscriber.Subscriptions.Add(subscription);
+
+            var placeholders = new Dictionary<string, string>()
+            {
+                { "imageUrl", "https://res.cloudinary.com/dyxgpclui/image/upload/v1747264748/icon-positive-vote-1_rdexez_acbkap.svg" },
+                { "header", $"Hey {subscriber.FirstName}," },
+                { "body", "thanks for joining Bookify 🤩" },
+            };
+
+            var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Email, placeholders);
+
+            await _emailSender.SendEmailAsync(
+                subscriber.Email,
+                "Welcome to Bookify",
+                body);
 
             _context.Add(subscriber);
             _context.SaveChanges();
@@ -151,6 +183,7 @@ namespace Cover_to_Cover.Web.Controllers
             var subscriber = _context.Subscribers
                 .Include(s => s.Governorate)
                 .Include(s => s.Area)
+                .Include(s => s.Subscriptions)
                 .SingleOrDefault(s => s.Id == subscriberId);
 
             if (subscriber is null)
@@ -160,6 +193,59 @@ namespace Cover_to_Cover.Web.Controllers
             viewModel.Key = id;
 
             return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RenewSubscription(string sKey)
+        {
+            if (String.IsNullOrEmpty(sKey))
+                return BadRequest();
+
+            var subscriberId = int.Parse(_dataProtector.Unprotect(sKey));
+            var subscriber = _context.Subscribers
+                .Include(s => s.Subscriptions)
+                .SingleOrDefault(s => s.Id == subscriberId);
+
+            if (subscriber is null)
+                return NotFound();
+
+            if (subscriber.IsBlackListed)
+                return BadRequest();
+
+            var lastSubscription = subscriber.Subscriptions.Last();
+            var startDate = lastSubscription.EndDate < DateTime.Today
+                            ? DateTime.Today
+                            : lastSubscription.EndDate.AddDays(1);
+
+            Subscription subscription = new()
+            {
+                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
+                CreatedOn = DateTime.Now,
+                StartDate = startDate,
+                EndDate = startDate.AddYears(1),
+            };
+            subscriber.Subscriptions.Add(subscription);
+
+            _context.SaveChanges();
+
+            var placeholders = new Dictionary<string, string>()
+            {
+                { "imageUrl", "https://res.cloudinary.com/dyxgpclui/image/upload/v1747264748/icon-positive-vote-1_rdexez_acbkap.svg" },
+                { "header", $"Hey {subscriber.FirstName}," },
+                { "body", $"your subscription has been renewed through {subscription.EndDate.ToString("d MMM, yyyy")} 🎉🎉" },
+            };
+
+            var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Email, placeholders);
+
+            await _emailSender.SendEmailAsync(
+                subscriber.Email,
+                "Bookify Subscription Renewal",
+                body);
+
+            var viewModel = _mapper.Map<SubscriptionViewModel>(subscription);
+
+            return PartialView("_SubscriptionRow", viewModel);
         }
         private SubscriberFormViewModel FillData(SubscriberFormViewModel? model = null)
         {

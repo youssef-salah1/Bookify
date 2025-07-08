@@ -5,6 +5,7 @@
 using Azure.Core;
 using Bookify.Web.Core.Models;
 using Bookify.Web.Services;
+using Cover_to_Cover.Web.Core.Consts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -91,13 +92,16 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
                 values: new { userId = userId, code = code },
             protocol: Request.Scheme);
 
-            var body = _emailBodyBuilder.GetEmailBody(
-                "https://res.cloudinary.com/devcreed/image/upload/v1668732314/icon-positive-vote-1_rdexez.svg",
-                        $"Hey {user.FullName}, thanks for joining us!",
-                        "please confirm your email",
-                        $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
-                        "Active Account!"
-                );
+            var placeholders = new Dictionary<string, string>()
+            {
+                { "imageUrl", "https://res.cloudinary.com/dyxgpclui/image/upload/v1747264748/icon-positive-vote-1_rdexez_acbkap.svg" },
+                { "header", $"Hey {user.FullName}," },
+                { "body", "please confirm your email" },
+                { "url", $"{HtmlEncoder.Default.Encode(callbackUrl!)}" },
+                { "linkTitle", "Confirm Email" }
+            };
+
+            var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Email, placeholders);
 
             await _emailSender.SendEmailAsync(
                 user.Email,

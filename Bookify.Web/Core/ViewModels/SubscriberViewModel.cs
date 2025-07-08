@@ -1,4 +1,6 @@
-﻿namespace Bookify.Web.Core.ViewModels
+﻿using Cover_to_Cover.Web.Core.ViewModels;
+
+namespace Bookify.Web.Core.ViewModels
 {
     public class SubscriberViewModel
     {
@@ -17,5 +19,7 @@
         public string? Address { get; set; }
         public bool IsBlackListed { get; set; }
         public DateTime CreatedOn { get; set; }
+        public IEnumerable<SubscriptionViewModel> Subscriptions { get; set; } = new List<SubscriptionViewModel>();
+
     }
 }
