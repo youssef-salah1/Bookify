@@ -2,6 +2,7 @@
 using Cover_to_Cover.Web.Core.Consts;
 using Cover_to_Cover.Web.Core.Models;
 using Cover_to_Cover.Web.Core.ViewModels;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -14,7 +15,7 @@ using System.Text.Encodings.Web;
 
 namespace Cover_to_Cover.Web.Controllers
 {
-    //[Authorize(Roles = AppRoles.Reception)]
+    [Authorize(Roles = AppRoles.Reception)]
     public class SubscribersController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -85,10 +86,12 @@ namespace Cover_to_Cover.Web.Controllers
 
             var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Email, placeholders);
 
-            await _emailSender.SendEmailAsync(
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(
                 subscriber.Email,
                 "Welcome to Bookify",
-                body);
+                body));
+
+
 
             _context.Add(subscriber);
             _context.SaveChanges();
@@ -197,7 +200,7 @@ namespace Cover_to_Cover.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RenewSubscription(string sKey)
+        public IActionResult RenewSubscription(string sKey)
         {
             if (String.IsNullOrEmpty(sKey))
                 return BadRequest();
@@ -231,17 +234,17 @@ namespace Cover_to_Cover.Web.Controllers
 
             var placeholders = new Dictionary<string, string>()
             {
-                { "imageUrl", "https://res.cloudinary.com/dyxgpclui/image/upload/v1747264748/icon-positive-vote-1_rdexez_acbkap.svg" },
+                { "imageUrl", "https://res.cloudinary.com/dyxgpclui/image/upload/v1747265405/icon-positive-vote-1_rdexez_acbkap_fpsm6n.jpg" },
                 { "header", $"Hey {subscriber.FirstName}," },
                 { "body", $"your subscription has been renewed through {subscription.EndDate.ToString("d MMM, yyyy")} 🎉🎉" },
             };
 
-            var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Email, placeholders);
+            var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-            await _emailSender.SendEmailAsync(
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(
                 subscriber.Email,
                 "Bookify Subscription Renewal",
-                body);
+                body));
 
             var viewModel = _mapper.Map<SubscriptionViewModel>(subscription);
 

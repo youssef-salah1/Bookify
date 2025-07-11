@@ -4,6 +4,11 @@ using Bookify.Web.Helpers;
 using Bookify.Web.Seeds;
 using Bookify.Web.Services;
 using Bookify.Web.Settings;
+using Bookify.Web.Tasks;
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -54,6 +59,22 @@ builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
 
 builder.Services.AddExpressiveAnnotations();
+
+
+// Add Hangfire services.
+builder.Services.AddHangfire(configuration => configuration
+    .UseSqlServerStorage(connectionString));
+
+// Add the processing server as IHostedService
+builder.Services.AddHangfireServer();
+
+builder.Services.Configure<AuthorizationOptions>(options =>
+options.AddPolicy("AdminsOnly", policy =>
+{
+    policy.RequireAuthenticatedUser();
+    policy.RequireRole(AppRoles.Admin);
+}));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -84,6 +105,25 @@ var userManger = scope.ServiceProvider.GetRequiredService<UserManager<Applicatio
 
 await DefaultRoles.SeedAsync(roleManger);
 await DefaultUsers.SeedAdminUserAsync(userManger);
+
+app.UseHangfireDashboard("/hangfire" , new DashboardOptions
+{
+    DashboardTitle = "CTC Dashboard",
+    Authorization = new IDashboardAuthorizationFilter[]
+    {
+        new HangfireAuthorizationFilter("AdminsOnly")
+    }
+});
+
+var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+var webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+var emailBodyBuilder = scope.ServiceProvider.GetRequiredService<IEmailBodyBuilder>();
+var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
+
+var hangfireTasks = new HangfireTasks(dbContext, webHostEnvironment,
+    emailBodyBuilder, emailSender);
+
+RecurringJob.AddOrUpdate(() => hangfireTasks.PrepareExpirationAlert(), "0 14 * * *");
 
 
 app.MapControllerRoute(
