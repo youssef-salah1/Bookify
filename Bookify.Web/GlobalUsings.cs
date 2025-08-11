@@ -7,4 +7,5 @@ global using Bookify.Web.Filters;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Bookify.Web.Core.Consts;
+global using Cover_to_Cover.Web.Core.Enums;
 global using System.Security.Claims;

@@ -21,6 +21,8 @@
         public const string InvalidMobileNumber = "Invalid mobile number.";
         public const string ConfirmPasswordNotMatch = "The password and confirmation password do not match.";
         public const string InvalidNationalId = "Invalid national ID.";
+        public const string InvalidSerialNumber = "Invalid serial number.";
+        public const string NotAvilableRental = "This book/copy is not available for rental.";
         public const string EmptyImage = "Please select an image.";
     }
 }

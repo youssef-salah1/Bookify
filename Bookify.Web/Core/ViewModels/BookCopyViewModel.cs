@@ -7,6 +7,7 @@ namespace Bookify.Web.Core.ViewModels
         public int Id { get; set; }
         public int BookId { get; set; }
         public string BookTitle { get; set; } = null!;
+        public string? BookThumbnailUrl { get; set; }
 
         [Display(Name = "Is available for rental?")]
         public bool IsAvailableForRental { get; set; }
