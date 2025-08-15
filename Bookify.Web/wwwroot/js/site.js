@@ -64,8 +64,11 @@ function showErrormessage2(massage = "An error occurred while toggling the statu
     };
     toastr.error(message);
 }
+function disablebtn(btn) {
+    $(btn).attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
+}
 function onModalBegin() {
-    $('body :submit').attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
+    disablebtn($('#Modal').find(':submit'));
 }
 
 function onModalSuccess(row) {
@@ -83,6 +86,7 @@ function onModalSuccess(row) {
     KTMenu.init();
     KTMenu.initHandlers();
 }
+
 
 function onModalComplete() {
     $('body :submit').removeAttr('disabled').removeAttr('data-kt-indicator');
@@ -198,7 +202,7 @@ $(document).ready(function () {
             });
         }
         var valid = $(this).valid();
-        if (valid) onModalBegin();
+        if (valid) onModalBegin($(this).find(':submit'));
     });
 
     //datepicker
