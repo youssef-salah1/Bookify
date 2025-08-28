@@ -18,6 +18,8 @@ namespace Bookify.Web.Data
 
             builder.Entity<BookCategory>().HasKey(e => new { e.BookId, e.CategoryId });
             builder.Entity<RentalCopy>().HasKey(e => new { e.RentalId, e.BookCopyId });
+            builder.Entity<Rental>().HasQueryFilter(q => q.IsDeleted == false);
+            builder.Entity<RentalCopy>().HasQueryFilter(q => q.Rental!.IsDeleted == false);
 
             var cascadeFKs = builder.Model.GetEntityTypes()
                 .SelectMany(t => t.GetForeignKeys())

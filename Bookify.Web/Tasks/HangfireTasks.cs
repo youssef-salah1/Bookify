@@ -1,5 +1,6 @@
 ﻿using Bookify.Web.Services;
 using Cover_to_Cover.Web.Core.Consts;
+using Cover_to_Cover.Web.Core.Models;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 
@@ -72,6 +73,45 @@ namespace Bookify.Web.Tasks
                 //}
             }
         }
+        public async Task RentalPrepareExpirationAlert()
+        {
+            var tomorrow = DateTime.Today.AddDays(1);
 
+            var rentals = _context.Rentals
+                .Include(s => s.Subscriber)
+                .Include(r => r.RentalCopies)
+                .ThenInclude(r => r.BookCopy)
+                .ThenInclude(r => r!.Book)
+                .Where(r => r.RentalCopies.Any(r => r.EndDate == DateTime.Today.AddDays(1)))
+                .ToList();
+
+            foreach (var rental in rentals)
+            {
+                var expiredCopies = rental.RentalCopies.Where(c => c.EndDate.Date == tomorrow && !c.ReturnDate.HasValue).ToList();
+
+                var message = $"your rental for the below book(s) will be expired by tomorrow {tomorrow.ToString("dd MMM, yyyy")} 💔:";
+                message += "<ul>";
+
+                foreach (var copy in expiredCopies)
+                {
+                    message += $"<li>{copy.BookCopy!.Book!.Title}</li>";
+                }
+
+                message += "</ul>";
+
+                var placeholders = new Dictionary<string, string>()
+                {
+                    { "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1671062674/calendar_zfohjc.png" },
+                    { "header", $"Hello {rental.Subscriber!.FirstName}," },
+                    { "body", message }
+                };
+
+                var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
+
+                await _emailSender.SendEmailAsync(
+                    rental.Subscriber!.Email,
+                    "Bookify Rental Expiration 🔔", body);
+            }
+        }
     }
 }

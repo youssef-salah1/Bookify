@@ -8,7 +8,7 @@
     var statusClass = Model.IsBlackListed ? "danger" : lastSubscription.EndDate < DateTime.Today ? "warning" : "success";
 }
 
-<div class="alert bg-light-primary border border-primary border-3 border-dashed d-flex justify-content-between w-100 p-5 mb-10">
+<div class="alert bg-light-primary border border-primary border-3   d-flex justify-content-between w-100 p-5 mb-10">
     <div class="d-flex align-items-center">
         <div class="symbol symbol-40px me-4">
             <div class="symbol-label fs-2 fw-semibold text-success">
@@ -90,7 +90,7 @@
                     <!--begin::Details item-->
                     <div class="fw-bold mt-5">Date of Birth</div>
                     <div class="text-gray-600">
-                        <p class="text-gray-600 text-hover-primary">@Model.DateOfBirth</p>
+                        <p class="text-gray-600 text-hover-primary">@Model.DateOfBirth.ToString("dd MMM , yyyy")</p>
                     </div>
                     <!--begin::Details item-->
                     <!--begin::Details item-->
@@ -153,9 +153,11 @@
                                             </svg>
                                         </span>
                                         <!--end::Svg Icon-->
-                                        <div class="ms-2">
+                                        @* <div class="ms-2">
                                             @Model.Rentals.Sum(r => r.NumberOfCopies)
-                                        </div>
+                                        </div> *@
+                                        <div id="RentalsCount" class="ms-2" data-kt-countup="true" data-kt-countup-value="@Model.Rentals.Sum(r => r.NumberOfCopies)">0</div>
+
                                     </div>
                                     <div class="fs-7 fw-normal text-muted">Total number of copies.</div>
                                 </div>
@@ -300,7 +302,7 @@
 
 @section Scripts
 {
-    <script src="~/js/renew.js" asp-append-version="true"></script>
+    <script src="~/js/subscriber-details.js" asp-append-version="true"></script>
 }
 
 @section Plugins

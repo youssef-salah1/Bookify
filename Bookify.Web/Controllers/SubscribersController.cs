@@ -187,7 +187,7 @@ namespace Cover_to_Cover.Web.Controllers
                 .Include(s => s.Governorate)
                 .Include(s => s.Area)
                 .Include(s => s.Subscriptions)
-                .Include(s => s.Rentals)
+                .Include(s => s.Rentals.Where(r => r.IsDeleted == false))
                 .ThenInclude(s => s.RentalCopies)
                 .SingleOrDefault(s => s.Id == subscriberId);
 

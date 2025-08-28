@@ -4,7 +4,7 @@ namespace Bookify.Web.Core.ViewModels
 {
     public class RentalCopyViewModel
     {
-        public BookCopyViewModel? BookCopyViewModel { get; set; }
+        public BookCopyViewModel? BookCopy { get; set; }
         public DateTime RentalDate { get; set; }
         public DateTime EndDate { get; set; }
         public DateTime? ReturnDate { get; set; }

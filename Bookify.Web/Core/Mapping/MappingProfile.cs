@@ -62,8 +62,12 @@ namespace Bookify.Web.Core.Mapping
             CreateMap<Subscription, SubscriptionViewModel>().ReverseMap();
 
             //Rentals
-            CreateMap<Rental, RentalViewModel>();
+            CreateMap<Rental, RentalViewModel>()
+                .ReverseMap();
             CreateMap<RentalCopy, RentalCopyViewModel>();
+            CreateMap<RentalCopy, CopyHistoryViewModel>()
+                .ForMember(dest => dest.SubscriberMobile, opt => opt.MapFrom(src => src.Rental!.Subscriber!.MobileNumber))
+                .ForMember(dest => dest.SubscriberName, opt => opt.MapFrom(src => $"{src.Rental!.Subscriber!.FirstName} {src.Rental!.Subscriber!.LastName}"));
         }
     }
 }
