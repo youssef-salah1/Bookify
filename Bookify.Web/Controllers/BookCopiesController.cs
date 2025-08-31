@@ -7,15 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Bookify.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class BookCopiesController : Controller
+    public class BookCopiesController(ApplicationDbContext context, IMapper mapper) : Controller
     {
-        readonly private ApplicationDbContext _context;
-        readonly private IMapper _mapper;
-        public BookCopiesController(ApplicationDbContext context , IMapper mapper)
-        {
-            _context = context;
-            _mapper = mapper;
-        }
         public IActionResult Index()
         {
             return View();
@@ -23,7 +16,7 @@ namespace Bookify.Web.Controllers
         [AjaxOnly]
         public IActionResult Create(int Id)
         {
-            var book = _context.Books.Find(Id);
+            var book = context.Books.Find(Id);
             if (book is null) return BadRequest();
             BookCopyFormViewModel viewModel = new() { BookId = Id, ShowRentalInput = book.IsAvailableForRental };
             return PartialView("_Form" , viewModel);
@@ -34,7 +27,7 @@ namespace Bookify.Web.Controllers
         {
             //return Ok();
             if(!ModelState.IsValid) return BadRequest();
-            var book = _context.Books.Find(viewModel.Id);
+            var book = context.Books.Find(viewModel.Id);
             if (book is null) return NotFound();
             BookCopy bookCopy = new()
             {
@@ -43,18 +36,18 @@ namespace Bookify.Web.Controllers
                 EditionNumber = viewModel.EditionNumber,
                 CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value
             };
-            _context.BookCopies.Add(bookCopy);
-            _context.SaveChanges();
+            context.BookCopies.Add(bookCopy);
+            context.SaveChanges();
             return PartialView("_BookCopyRow", bookCopy);
         }
 
         [AjaxOnly]
         public IActionResult Edit(int Id)
         {
-            var copy = _context.BookCopies.Find(Id);
+            var copy = context.BookCopies.Find(Id);
             if (copy is null) return NotFound();
-            var model = _mapper.Map<BookCopyFormViewModel>(copy);
-            var book = _context.Books.Find(copy.BookId);
+            var model = mapper.Map<BookCopyFormViewModel>(copy);
+            var book = context.Books.Find(copy.BookId);
             if(book is null) return BadRequest();
             model.ShowRentalInput = book.IsAvailableForRental;
             return PartialView("_Form", model);
@@ -64,26 +57,26 @@ namespace Bookify.Web.Controllers
         public IActionResult Edit(BookCopyFormViewModel model)
         {
             if (!ModelState.IsValid) return BadRequest();
-            var copy = _context.BookCopies.Find(model.Id);
+            var copy = context.BookCopies.Find(model.Id);
             if (copy is null) return NotFound();
-            var book = _context.Books.Find(copy.BookId);
+            var book = context.Books.Find(copy.BookId);
             if (book is null) return BadRequest();
             copy.EditionNumber = model.EditionNumber;
             copy.IsAvailableForRental = model.IsAvailableForRental & book.IsAvailableForRental;
             copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-            _context.SaveChanges();
+            context.SaveChanges();
             return PartialView("_BookCopyRow", copy);
         }
         
         public IActionResult RentalHistory(int id)
         {
-            var rentals = _context.RentalCopies
+            var rentals = context.RentalCopies
                 .Include(r => r.Rental)
                 .ThenInclude(s => s.Subscriber)
                 .Where(b => b.BookCopyId == id)
                 .OrderByDescending(r => r.RentalDate)
                 .ToList();
-            var viewmodel = _mapper.Map<IEnumerable<CopyHistoryViewModel>>(rentals);
+            var viewmodel = mapper.Map<IEnumerable<CopyHistoryViewModel>>(rentals);
             return View(viewmodel);
         }
         
@@ -91,7 +84,7 @@ namespace Bookify.Web.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult ToggleStatus(int id)
         {
-            var book = _context.BookCopies.Find(id);
+            var book = context.BookCopies.Find(id);
 
             if (book is null)
                 return NotFound();
@@ -100,7 +93,7 @@ namespace Bookify.Web.Controllers
             book.LastUpdatedOn = DateTime.Now;
             book.LastUpdatedOn = DateTime.Now;
             book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-            _context.SaveChanges();
+            context.SaveChanges();
 
             return Ok();
         }

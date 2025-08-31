@@ -9,6 +9,17 @@
         "expressive.annotations.validate.min.js",
         "expressive.annotations.validate.js"
       ]
+    },
+    {
+      "library": "typeahead.js@0.11.1",
+      "destination": "wwwroot/lib/typeahead.js/",
+      "files": [
+        "typeahead.bundle.min.js"
+      ]
+    },
+    {
+      "library": "handlebars.js@4.7.8",
+      "destination": "wwwroot/lib/handlebars.js/"
     }
   ]
 }
