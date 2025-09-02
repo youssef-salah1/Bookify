@@ -25,12 +25,12 @@ namespace Bookify.Web.Services
                 From = new MailAddress(_mailSettings.Email!, _mailSettings.DisplayName),
                 Body = htmlMessage,
                 Subject = subject,
-                IsBodyHtml= true
+                IsBodyHtml = true
             };
 
             message.To.Add(_webHostEnvironment.IsDevelopment() ? "ys1466@fayoum.edu.eg" : email);
 
-            SmtpClient smtpClient= new(_mailSettings.Host)
+            SmtpClient smtpClient = new(_mailSettings.Host)
             {
                 Port = _mailSettings.Port,
                 Credentials = new NetworkCredential(_mailSettings.Email, _mailSettings.Password),

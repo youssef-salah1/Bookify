@@ -2,7 +2,7 @@
 {
     public enum RentalsConfigurations
     {
-         RentalDuration = 7,
-         MaxAllowedCopies = 3
+        RentalDuration = 7,
+        MaxAllowedCopies = 3
     }
 }

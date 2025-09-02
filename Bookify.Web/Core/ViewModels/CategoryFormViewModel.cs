@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace Bookify.Web.Core.ViewModels
+﻿namespace Bookify.Web.Core.ViewModels
 {
     public class CategoryFormViewModel
     {

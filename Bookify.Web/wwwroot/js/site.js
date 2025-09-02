@@ -18,12 +18,13 @@ function showErrorMessage(message = 'Something went wrong!') {
     Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: message.responseText !== undefined ? message.responseText : message ,
+        text: message.responseText !== undefined ? message.responseText : message,
         customClass: {
             confirmButton: "btn btn-primary"
         }
     });
 }
+
 function showSuccessMessage2(message = "Saved successfully.") {
     toastr.options = {
         "closeButton": true,
@@ -44,6 +45,7 @@ function showSuccessMessage2(message = "Saved successfully.") {
     };
     toastr.success(message);
 }
+
 function showErrormessage2(massage = "An error occurred while toggling the status.") {
     toastr.options = {
         "closeButton": true,
@@ -64,9 +66,11 @@ function showErrormessage2(massage = "An error occurred while toggling the statu
     };
     toastr.error(message);
 }
+
 function disablebtn(btn) {
     $(btn).attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
 }
+
 function onModalBegin() {
     disablebtn($('#Modal').find(':submit'));
 }
@@ -91,13 +95,15 @@ function onModalSuccess(row) {
 function onModalComplete() {
     $('body :submit').removeAttr('disabled').removeAttr('data-kt-indicator');
 }
+
 function Select2() {
     $('.js-select2').select2();
     $('.js-select2').on('select2:select', function (e) {
         var select = $(this);
-        $('form').not('#SignOut').validate().element('#' + select.attr('id'));
+        $('form').not('#SignOut').not('.js-excluded-validation').validate().element('#' + select.attr('id'));
     });
 }
+
 //DataTables
 var headers = $('th');
 $.each(headers, function (i) {
@@ -147,6 +153,17 @@ var KTDatatables = function () {
                     title: documentTitle,
                     exportOptions: {
                         columns: exportedCols
+                    },
+                    customize: function (doc) {
+                        pdfMake.fonts = {
+                            Arial: {
+                                normal: 'arial',
+                                bold: 'arial',
+                                italics: 'arial',
+                                bolditalics: 'arial'
+                            }
+                        }
+                        doc.defaultStyle.font = 'Arial';
                     }
                 }
             ]
@@ -194,7 +211,7 @@ var KTDatatables = function () {
 
 $(document).ready(function () {
     // on submit form
-    $('form').not('#SignOut').on('submit', function () {
+    $('form').not('#SignOut').not('.js-excluded-validation').on('submit', function () {
         if ($('.js-tinymce').length > 0) {
             $('.js-tinymce').each(function () {
                 var content = tinyMCE.get($(this).attr('id')).getContent();
@@ -215,7 +232,7 @@ $(document).ready(function () {
 
     //tinymce
     if ($('.js-tinymce').length > 0) {
-        var options = { selector: '.js-tinymce', height: "480" };
+        var options = {selector: '.js-tinymce', height: "480"};
 
         if (KTThemeMode.getMode() === "dark") {
             options["skin"] = "oxide-dark";
@@ -254,7 +271,7 @@ $(document).ready(function () {
                 modal.find('.modal-body').html(form);
                 $.validator.unobtrusive.parse(modal);
                 Select2();
-                
+
             },
             error: function () {
                 showErrorMessage();
@@ -347,5 +364,5 @@ $(document).ready(function () {
     // Handle sign out form
     $('.js-signout').on('click', function () {
         $('#SignOut').submit();
-     });
+    });
 });

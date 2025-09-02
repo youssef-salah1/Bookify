@@ -15,7 +15,7 @@ namespace Bookify.Web.Helpers
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            if(string.IsNullOrEmpty(ActiveWhen))
+            if (string.IsNullOrEmpty(ActiveWhen))
                 return;
 
             var currentController = ViewContextData?.RouteData.Values["controller"]?.ToString() ?? string.Empty;

@@ -1,8 +1,5 @@
-using Bookify.Web.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using HashidsNet;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Bookify.Web.Controllers
 {
@@ -23,7 +20,7 @@ namespace Bookify.Web.Controllers
 
         public IActionResult Index()
         {
-            if(User!.Identity!.IsAuthenticated)
+            if (User!.Identity!.IsAuthenticated)
                 return RedirectToAction(nameof(Index), "Dashboard");
             var lastAddedBooks = _context.Books
                 .Include(b => b.Author)
@@ -46,9 +43,9 @@ namespace Bookify.Web.Controllers
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error(int statusCode = 500)
         {
-            return View(new Core.ViewModels.ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(new ErrorViewModel { ErrorCode = statusCode, ErrorDescription = ReasonPhrases.GetReasonPhrase(statusCode) });
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using Cover_to_Cover.Web.Core.Models;
-
-namespace Bookify.Web.Core.ViewModels
+﻿namespace Bookify.Web.Core.ViewModels
 {
     public class RentalViewModel
     {
@@ -10,7 +8,7 @@ namespace Bookify.Web.Core.ViewModels
         public DateTime CreatedOn { get; set; }
         public bool PenaltyPaid { get; set; }
         public IEnumerable<RentalCopyViewModel> RentalCopies { get; set; } = new List<RentalCopyViewModel>();
-        
+
         public int TotalDelayInDays
         {
             get

@@ -1,8 +1,4 @@
-﻿using Bookify.Web.Core.Models;
-using Bookify.Web.Core.ViewModels;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace Bookify.Web.Controllers
 {

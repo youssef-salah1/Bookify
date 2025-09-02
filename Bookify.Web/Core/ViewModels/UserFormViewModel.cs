@@ -6,8 +6,8 @@ namespace Bookify.Web.Core.ViewModels
     public class UserFormViewModel
     {
         public string? Id { get; set; }
-        [MaxLength(100, ErrorMessage = Errors.MaxLength), Display(Name = "Full Name") , 
-            RegularExpression(RegexPatterns.CharactersOnly_Eng , ErrorMessage = Errors.OnlyEnglishLetters)]
+        [MaxLength(100, ErrorMessage = Errors.MaxLength), Display(Name = "Full Name"),
+            RegularExpression(RegexPatterns.CharactersOnly_Eng, ErrorMessage = Errors.OnlyEnglishLetters)]
         public string FullName { get; set; } = null!;
         [MaxLength(20, ErrorMessage = Errors.MaxLength), Display(Name = "User Name")]
         [Remote("AllowItemByName", null!, AdditionalFields = "Id", ErrorMessage = Errors.Duplicated),
@@ -27,7 +27,7 @@ namespace Bookify.Web.Core.ViewModels
         [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = Errors.Confirm)]
-        [RequiredIf("Id == null" , ErrorMessage = Errors.RequiredField)]
+        [RequiredIf("Id == null", ErrorMessage = Errors.RequiredField)]
         public string? ConfirmPassword { get; set; } = null!;
 
         [Display(Name = "Roles")]

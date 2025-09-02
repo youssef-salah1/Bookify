@@ -1,12 +1,5 @@
-﻿using Bookify.Web.Core.Consts;
-using Bookify.Web.Core.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.IdentityModel.Tokens;
-using System.IO;
-using System.Linq;
 using System.Linq.Dynamic.Core;
 
 namespace Bookify.Web.Controllers
@@ -184,23 +177,23 @@ namespace Bookify.Web.Controllers
                 .ThenInclude(c => c.Category);
             //selet Data
             var search = Request.Form["search[value]"];
-            if(!String.IsNullOrEmpty(search))
+            if (!String.IsNullOrEmpty(search))
                 books = books.Where(b => b.Title.Contains(search) || b.Author!.Name.Contains(search));
             // sort data
             var SortByIndex = Request.Form["order[0][column]"];
-            int num =(int.Parse(SortByIndex) + (int.Parse(SortByIndex) == 0 ? 1 : 0));
+            int num = (int.Parse(SortByIndex) + (int.Parse(SortByIndex) == 0 ? 1 : 0));
             string val = num.ToString();
             var SortBy = Request.Form[$"columns[{val}][name]"];
             var SortDirection = Request.Form["order[0][dir]"];
             books = books.OrderBy($"{SortBy} {SortDirection}");
             //skip , take and size
             var skip = int.Parse(Request.Form["start"]);
-            var length = int.Parse(Request.Form["length"]); 
+            var length = int.Parse(Request.Form["length"]);
             var data = books.Skip(skip).Take(length).ToList();
             var recordsTotal = books.Count();
             // return
             var mapeddata = _mapper.Map<IEnumerable<BookViewModel>>(data);
-            return Ok(new { recordsFiltered = recordsTotal, recordsTotal, data = mapeddata});
+            return Ok(new { recordsFiltered = recordsTotal, recordsTotal, data = mapeddata });
         }
         [HttpPost]
         [ValidateAntiForgeryToken]

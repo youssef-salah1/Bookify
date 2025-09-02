@@ -1,6 +1,5 @@
 ﻿using Cover_to_Cover.Web.Core.Models;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.Web.Controllers
 {
@@ -230,7 +229,7 @@ namespace Bookify.Web.Controllers
                 Copies = _mapper.Map<IList<RentalCopyViewModel>>(rental.RentalCopies.Where(r => !r.ReturnDate.HasValue)),
                 SelectedCopies =
                     rental.RentalCopies.Where(r => !r.ReturnDate.HasValue).Select(r => new ReturnCopyViewModel
-                        { Id = r.BookCopyId, IsReturned = r.ExtendedOn.HasValue ? false : null }).ToList(),
+                    { Id = r.BookCopyId, IsReturned = r.ExtendedOn.HasValue ? false : null }).ToList(),
                 AllowExtend = (!subscriber!.IsBlackListed &&
                                subscriber.Subscriptions.Last().EndDate >=
                                rental.StartDate.AddDays((int)RentalsConfigurations.RentalDuration * 2)
@@ -303,7 +302,7 @@ namespace Bookify.Web.Controllers
                 else if (!copy.IsReturned.Value)
                 {
                     if (copyInDb.ExtendedOn.HasValue) continue;
-                    
+
                     copyInDb.ExtendedOn = DateTime.Now;
                     copyInDb.EndDate = copyInDb.RentalDate.AddDays((int)RentalsConfigurations.RentalDuration * 2);
                     isUpdated = true;
@@ -317,8 +316,8 @@ namespace Bookify.Web.Controllers
                 rental.PenaltyPaid = model.PenaltyPaid;
                 _context.SaveChanges();
             }
-            
-            return RedirectToAction(nameof(Details) , new { id = rental.Id });
+
+            return RedirectToAction(nameof(Details), new { id = rental.Id });
         }
 
         [HttpPost]

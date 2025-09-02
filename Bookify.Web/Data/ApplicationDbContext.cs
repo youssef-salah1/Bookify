@@ -1,6 +1,5 @@
 ﻿using Cover_to_Cover.Web.Core.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 
 namespace Bookify.Web.Data
 {

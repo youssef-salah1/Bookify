@@ -1,32 +1,21 @@
 ﻿using Bookify.Web.Services;
 using Cover_to_Cover.Web.Core.Consts;
-using Cover_to_Cover.Web.Core.Models;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 
 namespace Bookify.Web.Tasks
 {
-    public class HangfireTasks
+    public class HangfireTasks(
+        ApplicationDbContext context,
+        IWebHostEnvironment webHostEnvironment,
+        IEmailBodyBuilder emailBodyBuilder,
+        IEmailSender emailSender)
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
 
-        private readonly IEmailBodyBuilder _emailBodyBuilder;
-        private readonly IEmailSender _emailSender;
-
-        public HangfireTasks(ApplicationDbContext context,
-            IWebHostEnvironment webHostEnvironment,
-            IEmailBodyBuilder emailBodyBuilder,
-            IEmailSender emailSender)
-        {
-            _context = context;
-            _webHostEnvironment = webHostEnvironment;
-            _emailBodyBuilder = emailBodyBuilder;
-            _emailSender = emailSender;
-        }
         public async Task PrepareExpirationAlert()
         {
-            var subscribers = _context.Subscribers
+            var subscribers = context.Subscribers
                 .Include(s => s.Subscriptions)
                 .Where(s => !s.IsBlackListed && s.Subscriptions.OrderByDescending(x => x.EndDate).First().EndDate == DateTime.Today.AddDays(5))
                 .ToList();
@@ -43,9 +32,9 @@ namespace Bookify.Web.Tasks
                     { "body", $"your subscription will be expired by {endDate} 🙁" }
                 };
 
-                var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
+                var body = emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-                await _emailSender.SendEmailAsync(
+                await emailSender.SendEmailAsync(
                     subscriber.Email,
                     "Bookify Subscription Expiration", body);
 
@@ -77,7 +66,7 @@ namespace Bookify.Web.Tasks
         {
             var tomorrow = DateTime.Today.AddDays(1);
 
-            var rentals = _context.Rentals
+            var rentals = context.Rentals
                 .Include(s => s.Subscriber)
                 .Include(r => r.RentalCopies)
                 .ThenInclude(r => r.BookCopy)
@@ -87,7 +76,8 @@ namespace Bookify.Web.Tasks
 
             foreach (var rental in rentals)
             {
-                var expiredCopies = rental.RentalCopies.Where(c => c.EndDate.Date == tomorrow && !c.ReturnDate.HasValue).ToList();
+                var expiredCopies = rental.RentalCopies
+                    .Where(c => c.EndDate.Date == tomorrow && !c.ReturnDate.HasValue).ToList();
 
                 var message = $"your rental for the below book(s) will be expired by tomorrow {tomorrow.ToString("dd MMM, yyyy")} 💔:";
                 message += "<ul>";
@@ -106,9 +96,9 @@ namespace Bookify.Web.Tasks
                     { "body", message }
                 };
 
-                var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
+                var body = emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-                await _emailSender.SendEmailAsync(
+                await emailSender.SendEmailAsync(
                     rental.Subscriber!.Email,
                     "Bookify Rental Expiration 🔔", body);
             }

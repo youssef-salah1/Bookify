@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Bookify.Web.Core.Models;
-using Cover_to_Cover.Web.Core.Models;
+﻿using Cover_to_Cover.Web.Core.Models;
 using Cover_to_Cover.Web.Core.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 

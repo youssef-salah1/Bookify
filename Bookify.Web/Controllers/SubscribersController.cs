@@ -5,13 +5,8 @@ using Cover_to_Cover.Web.Core.ViewModels;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.Numerics;
-using System.Text.Encodings.Web;
 
 namespace Cover_to_Cover.Web.Controllers
 {

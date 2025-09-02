@@ -1,7 +1,5 @@
-﻿using Bookify.Web.Core.Consts;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using UoN.ExpressiveAnnotations.NetCore.Attributes;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Bookify.Web.Core.ViewModels
 {

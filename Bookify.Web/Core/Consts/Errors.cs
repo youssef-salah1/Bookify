@@ -28,5 +28,7 @@
         public const string InactiveSubscriber = "This subscriber is inactive.";
         public const string MaxCopiesReached = "This subscriber has reached the max number for rentals.";
         public const string CopyIsInRental = "This copy is already rentaled.";
+        public const string InvalidStartDate = "Invalid start date.";
+        public const string InvalidEndDate = "Invalid end date.";
     }
 }

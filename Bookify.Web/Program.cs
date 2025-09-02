@@ -1,5 +1,4 @@
 using Bookify.Web.Core.Mapping;
-using Bookify.Web.Data;
 using Bookify.Web.Helpers;
 using Bookify.Web.Seeds;
 using Bookify.Web.Services;
@@ -7,20 +6,22 @@ using Bookify.Web.Settings;
 using Bookify.Web.Tasks;
 using Hangfire;
 using Hangfire.Dashboard;
-using Hangfire.SqlServer;
+using HashidsNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Context;
 using System.Reflection;
-using HashidsNet;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
+using ViewToHTML.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+                       throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -37,10 +38,8 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options => options.Val
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
-
     options.Password.RequiredLength = 8;
     options.User.RequireUniqueEmail = true;
-
 });
 
 builder.Services.AddDataProtection().SetApplicationName(nameof(Cover_to_Cover));
@@ -72,11 +71,17 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddHangfireServer();
 
 builder.Services.Configure<AuthorizationOptions>(options =>
-options.AddPolicy("AdminsOnly", policy =>
-{
-    policy.RequireAuthenticatedUser();
-    policy.RequireRole(AppRoles.Admin);
-}));
+    options.AddPolicy("AdminsOnly", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole(AppRoles.Admin);
+    }));
+builder.Services.AddViewToHTML();
+
+//Add Serilog
+Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+builder.Host.UseSerilog();
+
 
 var app = builder.Build();
 
@@ -91,6 +96,20 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+app.UseExceptionHandler("/Home/Error");
+app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
+
+app.UseCookiePolicy(new CookiePolicyOptions()
+{
+    Secure = CookieSecurePolicy.Always
+});
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Frame-Options", "Deny");
+    await next();
+});
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -109,7 +128,7 @@ var userManger = scope.ServiceProvider.GetRequiredService<UserManager<Applicatio
 await DefaultRoles.SeedAsync(roleManger);
 await DefaultUsers.SeedAdminUserAsync(userManger);
 
-app.UseHangfireDashboard("/hangfire" , new DashboardOptions
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     DashboardTitle = "CTC Dashboard",
     Authorization = new IDashboardAuthorizationFilter[]
@@ -128,6 +147,15 @@ var hangfireTasks = new HangfireTasks(dbContext, webHostEnvironment,
 
 RecurringJob.AddOrUpdate(() => hangfireTasks.PrepareExpirationAlert(), "0 14 * * *");
 
+app.Use(async (context, next) =>
+{
+    LogContext.PushProperty("UserId", context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+    LogContext.PushProperty("UserName", context.User.FindFirst(ClaimTypes.Name)?.Value);
+
+    await next();
+});
+
+app.UseSerilogRequestLogging();
 
 app.MapControllerRoute(
     name: "default",

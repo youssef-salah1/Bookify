@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using System.Text.Encodings.Web;
-
-namespace Bookify.Web.Services
+﻿namespace Bookify.Web.Services
 {
     public class EmailBodyBuilder : IEmailBodyBuilder
     {

@@ -1,5 +1,4 @@
-﻿using Cover_to_Cover.Web.Core.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using UoN.ExpressiveAnnotations.NetCore.Attributes;
 
 namespace Cover_to_Cover.Web.Core.ViewModels
@@ -7,7 +6,7 @@ namespace Cover_to_Cover.Web.Core.ViewModels
     public class SubscriberFormViewModel
     {
         //public int Id { get; set; }
-        public string? Key {  get; set; }
+        public string? Key { get; set; }
 
         [Display(Name = "First Name")]
         [MaxLength(100, ErrorMessage = Errors.MaxLength)]

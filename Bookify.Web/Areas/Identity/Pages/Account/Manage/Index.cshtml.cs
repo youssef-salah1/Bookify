@@ -2,15 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using Bookify.Web.Core.Models;
 using Bookify.Web.Services;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 
 namespace Bookify.Web.Areas.Identity.Pages.Account.Manage
 {

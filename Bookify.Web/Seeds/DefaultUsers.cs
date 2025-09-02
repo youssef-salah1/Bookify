@@ -10,11 +10,11 @@ namespace Bookify.Web.Seeds
             {
                 UserName = "Admin",
                 Email = "Admin@gmail.com",
-                FullName="Admin",
+                FullName = "Admin",
                 EmailConfirmed = true
             };
             var valid = await userManager.FindByEmailAsync(user.Email);
-            if(valid is null)
+            if (valid is null)
             {
                 await userManager.CreateAsync(user, "Admin@1234");
                 await userManager.AddToRoleAsync(user, AppRoles.Admin);

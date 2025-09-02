@@ -2,19 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Bookify.Web.Core.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace Bookify.Web.Areas.Identity.Pages.Account
 {
@@ -24,7 +14,7 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger , UserManager<ApplicationUser> userManager)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger, UserManager<ApplicationUser> userManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -116,7 +106,8 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var user = await _userManager.Users.SingleOrDefaultAsync(u => !u.IsDeleted && (u.NormalizedUserName == Input.Username.ToUpper() || u.NormalizedEmail == Input.Username.ToUpper()));
-                if(user is null){
+                if (user is null)
+                {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                     return Page();
                 }

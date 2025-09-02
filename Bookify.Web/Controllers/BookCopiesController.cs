@@ -1,7 +1,4 @@
-﻿using Bookify.Web.Core.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
 
 
 namespace Bookify.Web.Controllers
@@ -19,14 +16,14 @@ namespace Bookify.Web.Controllers
             var book = context.Books.Find(Id);
             if (book is null) return BadRequest();
             BookCopyFormViewModel viewModel = new() { BookId = Id, ShowRentalInput = book.IsAvailableForRental };
-            return PartialView("_Form" , viewModel);
+            return PartialView("_Form", viewModel);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(BookCopyFormViewModel viewModel)
         {
             //return Ok();
-            if(!ModelState.IsValid) return BadRequest();
+            if (!ModelState.IsValid) return BadRequest();
             var book = context.Books.Find(viewModel.Id);
             if (book is null) return NotFound();
             BookCopy bookCopy = new()
@@ -48,7 +45,7 @@ namespace Bookify.Web.Controllers
             if (copy is null) return NotFound();
             var model = mapper.Map<BookCopyFormViewModel>(copy);
             var book = context.Books.Find(copy.BookId);
-            if(book is null) return BadRequest();
+            if (book is null) return BadRequest();
             model.ShowRentalInput = book.IsAvailableForRental;
             return PartialView("_Form", model);
         }
@@ -67,7 +64,7 @@ namespace Bookify.Web.Controllers
             context.SaveChanges();
             return PartialView("_BookCopyRow", copy);
         }
-        
+
         public IActionResult RentalHistory(int id)
         {
             var rentals = context.RentalCopies
@@ -79,7 +76,7 @@ namespace Bookify.Web.Controllers
             var viewmodel = mapper.Map<IEnumerable<CopyHistoryViewModel>>(rentals);
             return View(viewmodel);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult ToggleStatus(int id)
