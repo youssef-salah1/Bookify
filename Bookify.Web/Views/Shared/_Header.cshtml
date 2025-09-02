@@ -153,7 +153,7 @@
 						<div class="menu-content d-flex align-items-center px-3">
 							<!--begin::Avatar-->
 							<div class="symbol symbol-50px me-5">
-								<img alt="Logo" src="~/assets/images/avatar.png" />
+								<img src="@avatarUrl" alt="image" />
 							</div>
 							<!--end::Avatar-->
 							<!--begin::Username-->
@@ -169,16 +169,7 @@
 					</div>
 					<!--end::Menu item-->
 					<!--begin::Menu separator-->
-					<div class="separator my-2"></div>
-					<!--end::Menu separator-->
-					<!--begin::Menu item-->
-					<div class="menu-item px-5">
-						<a href="../../demo14/dist/account/overview.html" class="menu-link px-5">My Profile</a>
-					</div>
-					<!--end::Menu item-->
-					<!--end::Menu item-->
-					<!--begin::Menu separator-->
-					<div class="separator my-2"></div>
+					
 					<!--end::Menu separator-->
 					<div class="menu-item px-5 my-1">
 						<a asp-area="Identity" asp-page="/Account/Manage/Index" class="menu-link px-5">Account Settings</a>
